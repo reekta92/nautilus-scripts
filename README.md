@@ -21,9 +21,44 @@ echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
 ```
 # Scripts
 - [Terminal at Folder Location](#open-terminal)
+  
+- - -
+
 - [Fast Video Preview](#ffpreview)
 - [Fast Text Preview](#txtpreview)
 - [Fast Image Preview](#imvpreview)
+
+**DISCLAIMER: Preview scripts works better on a _Niri_ setup, since they autoclose after losing focus. You need the [niri](niri/) version of the scripts though. Also these window rules should make the experience much better:**
+
+<details>
+<summary>Window rules</summary>
+    
+```txt
+window-rule {
+    match app-id="imv"
+    open-floating true
+    default-column-width { proportion 0.4; }
+    default-window-height { proportion 0.6; }
+}
+
+window-rule {
+    match app-id="text-preview"
+    open-floating true
+    default-column-width { proportion 0.4; }
+    default-window-height { proportion 0.6; }
+}
+
+window-rule {
+    match app-id="ffplay"
+    open-floating true
+    default-column-width { proportion 0.5; }
+    default-window-height { proportion 0.5; }
+}
+```
+
+</details>
+
+- - -
 - [OCR From Selected Image](#ocr)
 
 
