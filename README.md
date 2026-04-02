@@ -20,9 +20,9 @@ touch ~/.config/nautilus/scr-keybinds
 echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
 ```
 # Scripts
-[Terminal at Folder Location](#open-terminal)
-[Fast Video Preview](#ffpreview)
-[Fast Text Preview](#txtpreview)
+- [Terminal at Folder Location](#open-terminal)
+- [Fast Video Preview](#ffpreview)
+- [Fast Text Preview](#txtpreview)
 
 ## open-terminal
 
