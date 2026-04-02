@@ -1,2 +1,86 @@
 # nautilus-scripts
 Some `nautilus` (GNOME file manager) scripts i made for myself but they should work for most linux setups!
+
+# Usage
+```bash
+
+# Create scripts folder
+mkdir ~/.local/share/nautilus/scripts/
+
+# Move the script
+mv <SCRIPT_NAME> ~/.local/share/nautilus/scripts/
+
+# Make it executable
+chmod +x ~/.local/share/nautilus/scripts/<SCRIPT_NAME
+
+# Create keybind file
+touch ~/.config/nautilus/scr-keybinds
+
+# Set keybind
+echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
+```
+# Scripts
+
+## open-terminal
+
+Open your terminal at the current folder location.
+
+```bash
+#!/usr/bin/env bash
+TARGET_DIR="$PWD"
+SELECTED="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+SELECTED=$(echo -n "$SELECTED" | head -n 1)
+
+if [ -n "$SELECTED" ] && [ -d "$SELECTED" ]; then
+    TARGET_DIR="$SELECTED"
+fi
+
+TERMINAL=${TERMINAL:-x-terminal-emulator}
+if ! command -v "$TERMINAL" >/dev/null 2>&1; then
+    for term in alacritty kitty gnome-terminal konsole xfce4-terminal; do
+        if command -v "$term" >/dev/null 2>&1; then
+            TERMINAL="$term"
+            break
+        fi
+    done
+fi
+
+cd "$TARGET_DIR" || exit 1
+"$TERMINAL" &
+```
+
+## ffpreview
+
+Video preview using `ffplay` from `ffmpeg`. **Requires `ffmpeg` to be installed**.
+
+```bash
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+FILE=$(echo -n "$FILE" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" &
+```
+
+## txtpreview
+
+Text file preview using `bat`. **Requires `bat` to be installed**.
+
+```bash
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+FILE=$(echo -n "$FILE" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+TERMINAL=${TERMINAL:-x-terminal-emulator}
+if ! command -v "$TERMINAL" >/dev/null 2>&1; then
+    for term in alacritty kitty gnome-terminal konsole xfce4-terminal; do
+        if command -v "$term" >/dev/null 2>&1; then
+            TERMINAL="$term"
+            break
+        fi
+    done
+fi
+
+"$TERMINAL" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
+```
