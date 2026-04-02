@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS%%$'\n'*}}"
+
+[ -n "$FILE" ] || exit 0
+
+if command -v imv >/dev/null 2>&1; then
+    imv "$FILE" &
+    IMV_PID=$!
+    
+    (
+        while kill -0 $IMV_PID 2>/dev/null; do
+            FOCUSED_ID=$(niri msg -j focused-window | jq '.id' 2>/dev/null)
+            
+            IMV_WINDOW_ID=$(niri msg -j windows | jq ".[] | select(.pid == $IMV_PID) | .id" 2>/dev/null)
+            
+            if [ -n "$IMV_WINDOW_ID" ] && [ "$FOCUSED_ID" != "$IMV_WINDOW_ID" ]; then
+                kill $IMV_PID
+                break
+            fi
+            sleep 0.2
+        done
+    ) &
+    
+elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$FILE" &
+fi
