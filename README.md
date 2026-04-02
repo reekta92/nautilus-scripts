@@ -89,3 +89,20 @@ fi
 ## Niri
 I am currently using a Niri setup, these are the scripts specialized for the specific setup. They should work on your Niri setup too out-of-the-box or with some small adjustments.
 Refer to the: [niri](/niri/)
+### Differences
+- Their window automatically close with this `niri` config:
+```txt
+window-rule {
+    match app-id="text-preview"
+    open-floating true
+    default-column-width { proportion 0.4; }
+    default-window-height { proportion 0.6; }
+}
+
+window-rule {
+    match app-id="ffplay"
+    open-floating true
+    default-column-width { proportion 0.5; }
+    default-window-height { proportion 0.5; }
+}
+```
