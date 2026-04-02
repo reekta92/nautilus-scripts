@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+FILE=$(echo -n "$FILE" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+TERMINAL=${TERMINAL:-x-terminal-emulator}
+if ! command -v "$TERMINAL" >/dev/null 2>&1; then
+    for term in alacritty kitty gnome-terminal konsole xfce4-terminal; do
+        if command -v "$term" >/dev/null 2>&1; then
+            TERMINAL="$term"
+            break
+        fi
+    done
+fi
+
+"$TERMINAL" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &

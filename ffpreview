@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+FILE=$(echo -n "$FILE" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" &
