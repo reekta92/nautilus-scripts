@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+FILE=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+SDL_VIDEODRIVER=wayland ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" &
+FF_PID=$!
+
+while kill -0 $FF_PID 2>/dev/null; do
+    if niri msg focused-window 2>/dev/null | grep -qiE 'app_id: "ffplay"|title: "ffplay-preview"'; then
+        break
+    fi
+    sleep 0.1
+done
+
+while kill -0 $FF_PID 2>/dev/null; do
+    if ! niri msg focused-window 2>/dev/null | grep -qiE 'app_id: "ffplay"|title: "ffplay-preview"'; then
+        kill $FF_PID 2>/dev/null
+        break
+    fi
+    sleep 0.2
+done

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+TARGET_DIR="$PWD"
+SELECTED=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+
+if [ -n "$SELECTED" ] && [ -d "$SELECTED" ]; then
+    TARGET_DIR="$SELECTED"
+fi
+
+kitty --working-directory "$TARGET_DIR" &

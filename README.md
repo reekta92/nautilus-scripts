@@ -84,3 +84,8 @@ fi
 
 "$TERMINAL" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
 ```
+
+# Setup Specialized Versions
+## Niri
+I am currently using a Niri setup, these are the scripts specialized for the specific setup. They should work on your Niri setup too out-of-the-box or with some small adjustments.
+Refer to the: [Root Project](/niri/)

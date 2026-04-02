@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+FILE=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+kitty --class "text-preview" --title "text-preview" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
+TXT_PID=$!
+
+while kill -0 $TXT_PID 2>/dev/null; do
+    if niri msg focused-window 2>/dev/null | grep -qi 'text-preview'; then
+        break
+    fi
+    sleep 0.1
+done
+
+while kill -0 $TXT_PID 2>/dev/null; do
+    if ! niri msg focused-window 2>/dev/null | grep -qi 'text-preview'; then
+        kill $TXT_PID 2>/dev/null
+        break
+    fi
+    sleep 0.2
+done
