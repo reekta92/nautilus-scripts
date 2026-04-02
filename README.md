@@ -26,7 +26,7 @@ echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
 
 ## open-terminal
 
-Open your terminal at the current folder location.
+Open terminal at the current folder location.
 
 ```bash
 #!/usr/bin/env bash
@@ -64,10 +64,13 @@ FILE=$(echo -n "$FILE" | head -n 1)
 
 ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" &
 ```
+![ffplay](https://github.com/user-attachments/assets/20d96607-326d-4c5d-af0c-594a3ead3fe2)
 
 ## txtpreview
 
 Text file preview using `bat`. **Requires `bat` to be installed**.
+
+![bat](https://github.com/user-attachments/assets/0108610d-148d-401b-aeaf-9343697d665d)
 
 ```bash
 #!/usr/bin/env bash
