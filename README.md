@@ -22,8 +22,6 @@ echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
 # Scripts
 - [Terminal at Folder Location](#open-terminal)
   
-- - -
-
 - [Fast Video Preview](#ffpreview)
 - [Fast Text Preview](#txtpreview)
 - [Fast Image Preview](#imvpreview)
@@ -58,9 +56,7 @@ window-rule {
 
 </details>
 
-- - -
 - [OCR From Selected Image](#ocr)
-
 
 ## open-terminal
 
@@ -92,7 +88,9 @@ cd "$TARGET_DIR" || exit 1
 
 ## ffpreview
 
-Video preview using `ffplay` from `ffmpeg`. **Requires `ffmpeg` to be installed**.
+Video preview using `ffplay` from `ffmpeg`.
+
+**Requires `ffmpeg` to be installed**.
 
 ```bash
 #!/usr/bin/env bash
@@ -106,17 +104,58 @@ ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" 
 
 ## txtpreview
 
-Text file preview using `bat`. **Requires `bat` to be installed**.
+Text file preview using `bat`.
+
+**Requires `bat` to be installed**.
+
+```bash
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
+FILE=$(echo -n "$FILE" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+TERMINAL=${TERMINAL:-x-terminal-emulator}
+if ! command -v "$TERMINAL" >/dev/null 2>&1; then
+    for term in alacritty kitty gnome-terminal konsole xfce4-terminal; do
+        if command -v "$term" >/dev/null 2>&1; then
+            TERMINAL="$term"
+            break
+        fi
+    done
+fi
+
+#USE THIS LINE FOR DEBIAN/UBUNTU -> "$TERMINAL" -e bash -c 'batcat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
+"$TERMINAL" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
+```
 
 ![bat](https://github.com/user-attachments/assets/0108610d-148d-401b-aeaf-9343697d665d)
 
 ## imvpreview
 
-Image file preview using `imv`. **Requires `imv` to be installed**.
+Image file preview using `imv`.
+
+**Requires `imv` to be installed**.
+
+```bash
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS%%$'\n'*}}"
+
+[ -n "$FILE" ] || exit 0
+
+if command -v imv >/dev/null 2>&1; then
+    imv "$FILE" &
+elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$FILE" &
+fi
+```
+
+![ocr](https://github.com/user-attachments/assets/eb8ce006-7741-4844-9f5a-1ce4b07a4a95)
 
 ## ocr
 
-Copy text from selected image file using `tesseract`. **Requires `tesseract`, `tesseract-data-eng`(or other languages) and `imagemagick` to be installed**.
+Copy text from selected image file using `tesseract`.
+
+**Requires `tesseract`, `tesseract-data-eng`(or other languages) and `imagemagick` to be installed**.
 
 ```bash
 #!/usr/bin/env bash
@@ -136,6 +175,8 @@ fi
 
 "$TERMINAL" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
 ```
+
+![ocr](https://github.com/user-attachments/assets/95657430-1420-4169-9de6-e1f8b9e9585d)
 
 # Setup Specialized Versions
 ## Niri
