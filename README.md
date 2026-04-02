@@ -86,6 +86,8 @@ cd "$TARGET_DIR" || exit 1
 "$TERMINAL" &
 ```
 
+![terminal](https://github.com/user-attachments/assets/520c263a-7773-4507-8d44-ec6ec70f0bf4)
+
 ## ffpreview
 
 Video preview using `ffplay` from `ffmpeg`.
