@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+FILE=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$FILE" ] || exit 0
+
+tesseract "$FILE" stdout -l eng | wl-copy
+
+MIME_TYPE=$(file --mime-type -b "$FILE")
+
+if [[ "$MIME_TYPE" == image/* ]]; then
+    notify-send "OCR Complete" "Text from $(basename "$FILE") copied to clipboard."
+fi

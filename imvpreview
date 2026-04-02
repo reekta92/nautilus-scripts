@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+FILE="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS%%$'\n'*}}"
+
+[ -n "$FILE" ] || exit 0
+
+if command -v imv >/dev/null 2>&1; then
+    imv "$FILE" &
+elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$FILE" &
+fi

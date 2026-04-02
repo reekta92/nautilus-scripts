@@ -23,6 +23,9 @@ echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
 - [Terminal at Folder Location](#open-terminal)
 - [Fast Video Preview](#ffpreview)
 - [Fast Text Preview](#txtpreview)
+- [Fast Image Preview](#imvpreview)
+- [OCR From Selected Image](#ocr)
+
 
 ## open-terminal
 
@@ -71,6 +74,14 @@ ffplay -v quiet -autoexit -window_title "ffplay-preview" -x 1280 -y 720 "$FILE" 
 Text file preview using `bat`. **Requires `bat` to be installed**.
 
 ![bat](https://github.com/user-attachments/assets/0108610d-148d-401b-aeaf-9343697d665d)
+
+## imvpreview
+
+Image file preview using `imv`. **Requires `imv` to be installed**.
+
+## ocr
+
+Copy text from selected image file using `tesseract`. **Requires `tesseract`, `tesseract-data-eng`(or other languages) and `imagemagick` to be installed**.
 
 ```bash
 #!/usr/bin/env bash
