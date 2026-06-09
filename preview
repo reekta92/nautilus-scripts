@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+detect_terminal() {
+    if [ -n "$TERMINAL" ] && command -v "$TERMINAL" >/dev/null 2>&1; then
+        echo "$TERMINAL"
+        return 0
+    fi
+    for t in ghostty kitty alacritty wezterm foot konsole xfce4-terminal gnome-terminal; do
+        if command -v "$t" >/dev/null 2>&1; then
+            echo "$t"
+            return 0
+        fi
+    done
+    return 1
+}
+
+TERM=$(detect_terminal) || exit 1
+
+# Get the first selected file
+FILE=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$FILE" ] || exit 0;
+
+# Helper: Focus tracking
+auto_close_on_unfocus() {
+    local PID=$1
+
+    # Phase 1: Wait for window to exist and be focused
+    local count=0
+    while kill -0 $PID 2>/dev/null; do
+        FOCUSED_ID=$(niri msg -j focused-window | jq '.id' 2>/dev/null)
+        WINDOW_ID=$(niri msg -j windows | jq ".[] | select(.pid == $PID) | .id" 2>/dev/null)
+
+        if [ -n "$WINDOW_ID" ] && [ "$FOCUSED_ID" == "$WINDOW_ID" ]; then
+            break
+        fi
+
+        count=$((count + 1))
+        if [ $count -gt 50 ]; then
+            break
+        fi
+        sleep 0.1
+    done
+
+    # Phase 2: Kill when it loses focus
+    while kill -0 $PID 2>/dev/null; do
+        FOCUSED_ID=$(niri msg -j focused-window | jq '.id' 2>/dev/null)
+        WINDOW_ID=$(niri msg -j windows | jq ".[] | select(.pid == $PID) | .id" 2>/dev/null)
+
+        if [ -n "$WINDOW_ID" ] && [ "$FOCUSED_ID" != "$WINDOW_ID" ]; then
+            kill $PID 2>/dev/null
+            break
+        fi
+        sleep 0.2
+    done
+}
+
+# Helper: Launch a command in terminal, set window title, keep open until keypress.
+preview_in_terminal() {
+    local TITLE=$1
+    local CMD=$2
+
+    case "$TERM" in
+        ghostty) "$TERM" --class="dev.ghostty.preview" --gtk-single-instance=false -e bash -c "printf '\033]0;%s\007' \"$TITLE\"; $CMD; printf '\n[Press any key to close]'; read -rsn1" "$FILE" & ;;
+        kitty) "$TERM" --class "file-preview" --title "$TITLE" -e bash -c "printf '\033]0;%s\007' \"$TITLE\"; $CMD; printf '\n[Press any key to close]'; read -rsn1" "$FILE" & ;;
+        *) "$TERM" -e bash -c "$CMD; printf '\n[Press any key to close]'; read -rsn1" "$FILE" & ;;
+    esac
+    auto_close_on_unfocus $! &
+}
+
+# Detect MIME type
+MIME=$(file --dereference --mime-type -b "$FILE")
+
+case "$MIME" in
+    image/*)
+        if command -v imv >/dev/null; then
+            imv "$FILE" &
+            auto_close_on_unfocus $! &
+        else
+            notify-send "preview" "imv not found"
+        fi
+        ;;
+    video/*)
+        if command -v ffplay >/dev/null; then
+            SDL_VIDEODRIVER=wayland ffplay -v quiet -autoexit -window_title "preview" -x 1280 -y 720 "$FILE" &
+            auto_close_on_unfocus $! &
+        else
+            notify-send "preview" "ffplay not found"
+        fi
+        ;;
+    audio/*)
+        if command -v ffplay >/dev/null; then
+            SDL_VIDEODRIVER=wayland ffplay -v quiet -autoexit -nodisp "$FILE" &
+        else
+            notify-send "preview" "ffplay not found"
+        fi
+        ;;
+    application/pdf|application/x-pdf)
+        preview_in_terminal "PDF" 'pdftotext "$0" - | bat -l txt -p --color=always --paging=auto'
+        ;;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document)
+        preview_in_terminal "DOCX" 'docx2txt "$0" - | bat -l txt -p --color=always --paging=auto'
+        ;;
+    application/msword)
+        preview_in_terminal "DOC" 'catdoc "$0" | bat -l txt -p --color=always --paging=auto'
+        ;;
+    application/vnd.oasis.opendocument.text)
+        preview_in_terminal "ODT" 'odt2txt "$0" | bat -l txt -p --color=always --paging=auto'
+        ;;
+    application/zip)
+        preview_in_terminal "Archive" 'unzip -l "$0" | bat -p --color=always --paging=auto'
+        ;;
+    application/x-tar|application/gzip|application/x-xz|application/x-bzip2|application/x-zstd)
+        preview_in_terminal "Archive" 'bsdtar -tf "$0" | bat -p --color=always --paging=auto'
+        ;;
+    inode/directory)
+        preview_in_terminal "Directory" 'eza --tree --level=3 --color=always "$0" | bat -p --paging=auto'
+        ;;
+    *)
+        EXT="${FILE##*.}"
+        EXT=$(echo "$EXT" | tr '[:upper:]'[:lower:]')
+        if [ "$EXT" == "md" ] || [ "$MIME" == "text/markdown" ]; then
+             preview_in_terminal "Markdown" 'glow "$0"'
+        else
+             preview_in_terminal "Text" 'bat -p --color=always --style=numbers --paging=auto "$0"'
+        fi
+        ;;
+esac

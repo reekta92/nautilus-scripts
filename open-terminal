@@ -1,21 +1,35 @@
 #!/usr/bin/env bash
-TARGET_DIR="$PWD"
-SELECTED="${1:-${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}}"
-SELECTED=$(echo -n "$SELECTED" | head -n 1)
 
-if [ -n "$SELECTED" ] && [ -d "$SELECTED" ]; then
-    TARGET_DIR="$SELECTED"
-fi
-
-TERMINAL=${TERMINAL:-x-terminal-emulator}
-if ! command -v "$TERMINAL" >/dev/null 2>&1; then
-    for term in alacritty kitty gnome-terminal konsole xfce4-terminal; do
-        if command -v "$term" >/dev/null 2>&1; then
-            TERMINAL="$term"
-            break
+detect_terminal() {
+    if [ -n "$TERMINAL" ] && command -v "$TERMINAL" >/dev/null 2>&1; then
+        echo "$TERMINAL"
+        return 0
+    fi
+    for t in ghostty kitty alacritty wezterm foot konsole xfce4-terminal gnome-terminal; do
+        if command -v "$t" >/dev/null 2>&1; then
+            echo "$t"
+            return 0
         fi
     done
+    return 1
+}
+
+TARGET_DIR="$PWD"
+SELECTED=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+
+if [ -n "$SELECTED" ]; then
+    if [ -d "$SELECTED" ]; then
+        TARGET_DIR="$SELECTED"
+    else
+        TARGET_DIR="$(dirname "$SELECTED")"
+    fi
 fi
 
-cd "$TARGET_DIR" || exit 1
-"$TERMINAL" &
+TERM=$(detect_terminal) || exit 1
+
+case "$TERM" in
+    kitty) kitty --directory="$TARGET_DIR" & ;;
+    wezterm) wezterm start --cwd "$TARGET_DIR" & ;;
+    konsole) konsole --workdir "$TARGET_DIR" & ;;
+    *) "$TERM" --working-directory="$TARGET_DIR" & ;;
+esac

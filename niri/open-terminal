@@ -1,9 +1,35 @@
 #!/usr/bin/env bash
+
+detect_terminal() {
+    if [ -n "$TERMINAL" ] && command -v "$TERMINAL" >/dev/null 2>&1; then
+        echo "$TERMINAL"
+        return 0
+    fi
+    for t in ghostty kitty alacritty wezterm foot konsole xfce4-terminal gnome-terminal; do
+        if command -v "$t" >/dev/null 2>&1; then
+            echo "$t"
+            return 0
+        fi
+    done
+    return 1
+}
+
 TARGET_DIR="$PWD"
 SELECTED=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
 
-if [ -n "$SELECTED" ] && [ -d "$SELECTED" ]; then
-    TARGET_DIR="$SELECTED"
+if [ -n "$SELECTED" ]; then
+    if [ -d "$SELECTED" ]; then
+        TARGET_DIR="$SELECTED"
+    else
+        TARGET_DIR="$(dirname "$SELECTED")"
+    fi
 fi
 
-kitty --working-directory "$TARGET_DIR" &
+TERM=$(detect_terminal) || exit 1
+
+case "$TERM" in
+    kitty) kitty --directory="$TARGET_DIR" & ;;
+    wezterm) wezterm start --cwd "$TARGET_DIR" & ;;
+    konsole) konsole --workdir "$TARGET_DIR" & ;;
+    *) "$TERM" --working-directory="$TARGET_DIR" & ;;
+esac

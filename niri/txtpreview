@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
+
+detect_terminal() {
+    if [ -n "$TERMINAL" ] && command -v "$TERMINAL" >/dev/null 2>&1; then
+        echo "$TERMINAL"
+        return 0
+    fi
+    for t in ghostty kitty alacritty wezterm foot konsole xfce4-terminal gnome-terminal; do
+        if command -v "$t" >/dev/null 2>&1; then
+            echo "$t"
+            return 0
+        fi
+    done
+    return 1
+}
+
 FILE=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
 [ -n "$FILE" ] || exit 0
 
-kitty --class "text-preview" --title "text-preview" -e bash -c 'bat --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" &
+TERM=$(detect_terminal) || exit 1
+
+case "$TERM" in
+    ghostty) "$TERM" --class="text-preview" -e bash -c 'bat -p --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" & ;;
+    kitty) "$TERM" --class "text-preview" --title "text-preview" -e bash -c 'bat -p --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" & ;;
+    *) "$TERM" -e bash -c 'bat -p --color=always --style=numbers --paging=auto "$0"; read -rsn1' "$FILE" & ;;
+esac
 TXT_PID=$!
 
 while kill -0 $TXT_PID 2>/dev/null; do
