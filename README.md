@@ -11,13 +11,13 @@ mkdir ~/.local/share/nautilus/scripts/
 mv <SCRIPT_NAME> ~/.local/share/nautilus/scripts/
 
 # Make it executable
-chmod +x ~/.local/share/nautilus/scripts/<SCRIPT_NAME
+chmod +x ~/.local/share/nautilus/scripts/<SCRIPT_NAME>
 
 # Create keybind file
 touch ~/.config/nautilus/scr-keybinds
 
 # Set keybind
-echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.local/share/nautilus/scripts/<SCRIPT_NAME
+echo "<KEYBIND> <SCRIPT_NAME>" >> ~/.config/nautilus/scr-keybinds
 ```
 # Scripts
 - [Terminal at Folder Location](#open-terminal)
